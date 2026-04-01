@@ -334,7 +334,7 @@ def update_skill(target: str) -> None:
         json.dumps(
             {
                 "installed": str(dest),
-                "next_steps": ["Run: dataclaw prep"],
+                "next_steps": ["Step 3 - Prep: run dataclaw prep"],
                 "next_command": "dataclaw prep",
             },
             indent=2,

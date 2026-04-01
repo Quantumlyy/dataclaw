@@ -227,7 +227,7 @@ def run_export(
                     {
                         "error": "Deprecated publish attestation flag was provided.",
                         "hint": "Use --publish-attestation with a detailed text statement.",
-                        "blocked_on_step": "Step 3/3",
+                        "blocked_on_step": "Step 6/6",
                         "process_steps": EXPORT_REVIEW_PUBLISH_STEPS,
                         "next_command": (
                             "dataclaw export --publish-attestation "
@@ -244,7 +244,7 @@ def run_export(
                     {
                         "error": "You must run `dataclaw confirm` before pushing.",
                         "hint": "Export first with --no-push, review the data, then run `dataclaw confirm`.",
-                        "blocked_on_step": "Step 2/3",
+                        "blocked_on_step": "Step 5/6",
                         "process_steps": EXPORT_REVIEW_PUBLISH_STEPS,
                         "next_command": "dataclaw confirm",
                     },
@@ -261,7 +261,7 @@ def run_export(
                         "error": "Missing or invalid publish attestation.",
                         "publish_attestation_error": publish_error,
                         "hint": "Ask the user to explicitly approve publishing, then pass a detailed text attestation.",
-                        "blocked_on_step": "Step 3/3",
+                        "blocked_on_step": "Step 6/6",
                         "process_steps": EXPORT_REVIEW_PUBLISH_STEPS,
                         "next_command": (
                             "dataclaw export --publish-attestation "
@@ -299,7 +299,7 @@ def run_export(
                     {
                         "error": "Missing or invalid review attestations from confirm step.",
                         "attestation_errors": review_errors,
-                        "blocked_on_step": "Step 2/3",
+                        "blocked_on_step": "Step 5/6",
                         "process_steps": EXPORT_REVIEW_PUBLISH_STEPS,
                         "next_command": CONFIRM_COMMAND_EXAMPLE,
                     },
@@ -319,7 +319,7 @@ def run_export(
                     {
                         "error": "No confirmed export file is recorded.",
                         "hint": "Run `dataclaw confirm --file path/to/export.jsonl` on the reviewed local export, then push again.",
-                        "blocked_on_step": "Step 2/3",
+                        "blocked_on_step": "Step 5/6",
                         "process_steps": EXPORT_REVIEW_PUBLISH_STEPS,
                         "next_command": "dataclaw confirm",
                     },
@@ -335,7 +335,7 @@ def run_export(
                     {
                         "error": f"Confirmed export file does not exist: {confirmed_file}",
                         "hint": "Re-export locally with `dataclaw export --no-push`, review it, rerun `dataclaw confirm`, then push again.",
-                        "blocked_on_step": "Step 1/3",
+                        "blocked_on_step": "Step 4/6",
                         "process_steps": EXPORT_REVIEW_PUBLISH_STEPS,
                         "next_command": "dataclaw export --no-push --output dataclaw_export.jsonl",
                     },
@@ -356,7 +356,7 @@ def run_export(
                         f"or pass `--source {_source_scope_placeholder()}` on the export command."
                     ),
                     "allowed_sources": sorted(EXPLICIT_SOURCE_CHOICES),
-                    "blocked_on_step": "Step 2/6",
+                    "blocked_on_step": "Step 3A/6",
                     "process_steps": _setup_to_publish_steps(),
                     "next_command": "dataclaw config --source all",
                 },
@@ -405,8 +405,7 @@ def run_export(
                     "total_stages": 4,
                     "dataset_url": f"https://huggingface.co/datasets/{repo_id}",
                     "next_steps": [
-                        "Done! Dataset is live. To update later: dataclaw export",
-                        "To reconfigure: dataclaw prep then dataclaw config",
+                        "Done! Dataset is live. To update later, repeat Steps 3 through 6: dataclaw prep, reconfigure as needed, export locally, confirm, then publish.",
                     ],
                     "next_command": None,
                 },
@@ -453,7 +452,7 @@ def run_export(
                         }
                         for project in projects
                     ],
-                    "blocked_on_step": "Step 3/6",
+                    "blocked_on_step": "Step 3B/6",
                     "process_steps": _setup_to_publish_steps(),
                     "next_command": "dataclaw config --confirm-projects",
                 },
@@ -570,8 +569,7 @@ def run_export(
                 "total_stages": 4,
                 "dataset_url": f"https://huggingface.co/datasets/{repo_id}",
                 "next_steps": [
-                    "Done! Dataset is live. To update later: dataclaw export",
-                    "To reconfigure: dataclaw prep then dataclaw config",
+                    "Done! Dataset is live. To update later, repeat Steps 3 through 6: dataclaw prep, reconfigure as needed, export locally, confirm, then publish.",
                 ],
                 "next_command": None,
             },
@@ -692,7 +690,7 @@ def main_impl(
                     {
                         "error": "Deprecated boolean attestation flags were provided.",
                         "hint": "Use text attestations instead so the command can validate what was reviewed.",
-                        "blocked_on_step": "Step 2/3",
+                        "blocked_on_step": "Step 5/6",
                         "process_steps": EXPORT_REVIEW_PUBLISH_STEPS,
                         "next_command": CONFIRM_COMMAND_EXAMPLE,
                     },

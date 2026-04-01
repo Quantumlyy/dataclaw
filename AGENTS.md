@@ -9,7 +9,19 @@ Export Claude Code, Codex, and other coding-agent conversation history to Huggin
 Do not memorize the flow. Do not skip steps. Do not improvise.
 Run the command -> read the output -> follow `next_steps`. That's it.
 
-The CLI tracks your stage (1-4: auth -> configure -> review -> done).
+Runtime guidance follows this checklist:
+
+1. Install
+2. Install skill
+3. Prep
+3A. Choose source scope
+3B. Choose project scope
+3C. Set redacted strings
+4. Export locally
+5. Review and confirm
+6. Publish
+
+The CLI tracks your stage as 1-4: auth -> configure -> review -> done.
 `dataclaw export` (push) is **gated** - you must run `dataclaw confirm` first or it will refuse.
 
 ## Getting Started
@@ -27,7 +39,7 @@ Key fields:
 - `next_steps` - follow these in order
 - `next_command` - the single most important command to run next (null if user input needed first)
 
-## PII Audit (Stage 3)
+## PII Audit (Stage 5)
 
 After `dataclaw export --no-push`, follow the `next_steps` in the JSON output. The flow is:
 
@@ -42,11 +54,11 @@ After `dataclaw export --no-push`, follow the `next_steps` in the JSON output. T
 ## Commands Reference
 
 ```bash
-dataclaw status                            # Show current stage and next steps (JSON)
-dataclaw prep                              # Discover projects, check HF auth (JSON)
+dataclaw status                            # Show current stage and next steps
+dataclaw prep                              # Discover projects, check HF auth
 dataclaw prep --source all                 # Prep with all sources explicitly selected
 dataclaw prep --source claude              # Prep using one supported source key (for example claude)
-dataclaw confirm --full-name "NAME" --attest-full-name "..." --attest-sensitive "..." --attest-manual-scan "..." # Scan PII, verify attestations, unlock pushing (JSON)
+dataclaw confirm --full-name "NAME" --attest-full-name "..." --attest-sensitive "..." --attest-manual-scan "..." # Scan PII, verify attestations, unlock pushing
 dataclaw confirm --file /path/to/file.jsonl --full-name "NAME" --attest-full-name "..." --attest-sensitive "..." --attest-manual-scan "..." # Confirm a specific export file
 dataclaw list                              # List all projects with exclusion status
 dataclaw list --source all                 # List all sources
@@ -65,6 +77,7 @@ dataclaw export --source claude --no-push  # Export one supported source scope l
 dataclaw export --all-projects             # Include everything (ignore exclusions)
 dataclaw export --no-thinking              # Exclude extended thinking blocks
 dataclaw export -o /path/to/file.jsonl     # Custom output path
+dataclaw update-skill claude               # Install/update the dataclaw skill for Claude Code
 ```
 
 ## Gotchas
@@ -74,12 +87,11 @@ dataclaw export -o /path/to/file.jsonl     # Custom output path
 - **Source selection is REQUIRED before export** - explicitly set `dataclaw config --source <source|all>` (for example `claude` or `codex`), or pass `--source ...` on export.
 - **`dataclaw prep` outputs pure JSON** - parse it directly.
 - **Always export with `--no-push` first** - review before publishing.
+- **`dataclaw export` (push) reuses the exact file reviewed by `dataclaw confirm`** - if that file is missing, re-export locally and re-confirm before pushing.
 - **`dataclaw export` (push) requires `dataclaw confirm` first** - it will refuse otherwise. Re-exporting with `--no-push` resets this.
 - **PII audit is critical** - automated redaction is not foolproof.
 - **Large exports take time** - 500+ sessions may take 1-3 minutes. Use a generous timeout.
 
-## Install
+## Prerequisite
 
-```bash
-pip install dataclaw
-```
+`command -v dataclaw >/dev/null 2>&1 && echo "dataclaw: installed" || echo "NOT INSTALLED - run: pip install dataclaw"`

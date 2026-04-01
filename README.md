@@ -14,7 +14,7 @@ Paste this into Claude Code, Codex, or any coding agent:
 
 ```
 Help me export my Claude Code, Codex, and other coding-agent conversation history to Hugging Face using DataClaw.
-Install it, set up the skill, then walk me through the process.
+Install it, then walk me through the process.
 
 STEP 1 - INSTALL
   pip install dataclaw
@@ -22,9 +22,11 @@ STEP 1 - INSTALL
   If that also fails, ask the user where the source is.
 
 STEP 2 - INSTALL SKILL
+  Skill support is currently only available for Claude Code.
   dataclaw update-skill claude
+  For other agentic tools, skip this step and do not improvise a custom flow - follow the instructions in DataClaw's output on each step, especially next_steps and next_command.
 
-STEP 3 - START
+STEP 3 - PREP
   dataclaw prep
   Every dataclaw command outputs next_steps in its JSON - follow them through the entire flow.
 
@@ -33,21 +35,29 @@ STEP 3A - CHOOSE SOURCE SCOPE (REQUIRED BEFORE EXPORT)
   dataclaw config --source all
   Do not export until source scope is explicitly confirmed.
 
-STEP 3B - PRESENT ALL FOLDERS (REQUIRED BEFORE EXPORT)
+STEP 3B - CHOOSE PROJECT SCOPE (REQUIRED BEFORE EXPORT)
   dataclaw list --source all
   Send the FULL project/folder list to the user in a message (name, source, sessions, size, excluded).
   Ask which projects to exclude.
   dataclaw config --exclude "project1,project2" OR dataclaw config --confirm-projects
   Do not export until folder selection is explicitly confirmed.
 
-STEP 4 - REVIEW + CONFIRM (REQUIRED BEFORE PUSH)
+STEP 3C - SET REDACTED STRINGS
+  Ask the user what additional strings should always be redacted, such as company names, client names, domains, internal URLs, or secrets that regex might miss.
+  dataclaw config --redact "string1,string2"
+  dataclaw config --redact-usernames "user1,user2"
+  Only add these after explicit user confirmation.
+
+STEP 4 - EXPORT LOCALLY
   dataclaw export --no-push --output dataclaw_export.jsonl
+
+STEP 5 - REVIEW AND CONFIRM (REQUIRED BEFORE PUSH)
   Review PII findings and apply excludes/redactions as needed.
   Full name is requested for an exact-name privacy scan against the export.
   If the user declines sharing full name, use --skip-full-name-scan and attest the skip reason.
   dataclaw confirm --full-name "THEIR FULL NAME" --attest-full-name "..." --attest-sensitive "..." --attest-manual-scan "..."
 
-STEP 5 - PUBLISH (ONLY AFTER EXPLICIT USER APPROVAL)
+STEP 6 - PUBLISH (ONLY AFTER EXPLICIT USER APPROVAL)
   dataclaw export --publish-attestation "User explicitly approved publishing to Hugging Face."
   Never publish unless the user explicitly says yes.
 
@@ -64,46 +74,53 @@ IMPORTANT: Always export with --no-push first and review for PII before publishi
 ### Quick start
 
 ```bash
+# STEP 1 - INSTALL
 pip install dataclaw
 hf auth login --token YOUR_TOKEN
 
-# See your projects
+# STEP 3 - PREP
 dataclaw prep
-dataclaw config --source all  # REQUIRED: choose a supported source key or all
-dataclaw list --source all  # Present full list and confirm folder scope before export
-
-# Configure
 dataclaw config --repo username/my-personal-codex-data
-dataclaw config --exclude "personal-stuff,scratch"
+
+# STEP 3A - CHOOSE SOURCE SCOPE
+dataclaw config --source all  # REQUIRED: choose a supported source key or all
+
+# STEP 3B - CHOOSE PROJECT SCOPE
+dataclaw list --source all  # Present full list and confirm folder scope before export
+dataclaw config --exclude "personal-stuff,scratch"  # or: dataclaw config --confirm-projects
+
+# STEP 3C - SET REDACTED STRINGS
 dataclaw config --redact-usernames "my_github_handle,my_discord_name"
 dataclaw config --redact "my-domain.com,my-secret-project"
 
-# Export locally first
+# STEP 4 - EXPORT LOCALLY
 dataclaw export --no-push
 
-# Review and confirm
+# STEP 5 - REVIEW AND CONFIRM
 dataclaw confirm \
   --full-name "YOUR FULL NAME" \
   --attest-full-name "Asked for full name and scanned export for YOUR FULL NAME." \
   --attest-sensitive "Asked about company/client/internal names and private URLs; none found or redactions updated." \
   --attest-manual-scan "Manually scanned 20 sessions across beginning/middle/end and reviewed findings."
 
-# Optional if user declines sharing full name
+# Or: if user declines sharing full name
 dataclaw confirm \
   --skip-full-name-scan \
   --attest-full-name "User declined to share full name; skipped exact-name scan." \
   --attest-sensitive "Asked about company/client/internal names and private URLs; none found or redactions updated." \
   --attest-manual-scan "Manually scanned 20 sessions across beginning/middle/end and reviewed findings."
 
-# Push
+# STEP 6 - PUBLISH
 dataclaw export --publish-attestation "User explicitly approved publishing to Hugging Face."
 ```
+
+Step 2 (INSTALL SKILL) is omitted in manual usage.
 
 ### Commands
 
 | Command | Description |
 |---------|-------------|
-| `dataclaw status` | Show current stage and next steps (JSON) |
+| `dataclaw status` | Show current stage and next steps |
 | `dataclaw prep` | Discover projects, check HF auth, output JSON |
 | `dataclaw prep --source <source\|all>` | Prep with an explicit source scope |
 | `dataclaw list` | List all projects with exclusion status |

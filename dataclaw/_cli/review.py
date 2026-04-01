@@ -30,8 +30,8 @@ def _find_export_file(file_path: Path | None) -> Path:
         json.dumps(
             {
                 "error": "No export file found.",
-                "hint": "Run step 1 first to generate a local export file.",
-                "blocked_on_step": "Step 1/3",
+                "hint": "Run Step 4 first to generate a local export file.",
+                "blocked_on_step": "Step 4/6",
                 "process_steps": EXPORT_REVIEW_PUBLISH_STEPS,
                 "next_command": "dataclaw export --no-push --output dataclaw_export.jsonl",
             },
@@ -308,7 +308,7 @@ def confirm(
                         "Provide --full-name for an exact-name scan, or use --skip-full-name-scan "
                         "if the user declines sharing their name."
                     ),
-                    "blocked_on_step": "Step 2/3",
+                    "blocked_on_step": "Step 5/6",
                     "process_steps": EXPORT_REVIEW_PUBLISH_STEPS,
                     "next_command": CONFIRM_COMMAND_EXAMPLE,
                 },
@@ -326,7 +326,7 @@ def confirm(
                         "to run an exact-name privacy check. If the user declines, rerun with "
                         "--skip-full-name-scan and a full-name attestation describing the skip."
                     ),
-                    "blocked_on_step": "Step 2/3",
+                    "blocked_on_step": "Step 5/6",
                     "process_steps": EXPORT_REVIEW_PUBLISH_STEPS,
                     "next_command": CONFIRM_COMMAND_SKIP_FULL_NAME_EXAMPLE,
                 },
@@ -349,7 +349,7 @@ def confirm(
                     "error": "Missing or invalid review attestations.",
                     "attestation_errors": attestation_errors,
                     "required_attestations": REQUIRED_REVIEW_ATTESTATIONS,
-                    "blocked_on_step": "Step 2/3",
+                    "blocked_on_step": "Step 5/6",
                     "process_steps": EXPORT_REVIEW_PUBLISH_STEPS,
                     "next_command": CONFIRM_COMMAND_EXAMPLE,
                 },
@@ -411,35 +411,37 @@ def confirm(
     }
     save_config_fn(config)
 
-    next_steps = ["Show the user the project breakdown, full-name scan, and PII scan results above."]
+    next_steps = [
+        "Step 5 - Review and confirm: show the user the project breakdown, full-name scan, and PII scan results above."
+    ]
     if full_name_scan.get("skipped"):
         next_steps.append(
-            "Full-name scan was skipped at user request. Ensure this was explicitly reviewed with the user."
+            "Step 5 - Review and confirm: full-name scan was skipped at user request. Ensure this was explicitly reviewed with the user."
         )
     elif full_name_scan.get("match_count", 0):
         next_steps.append(
-            "Full-name scan found matches. Review them with the user and redact if needed, then re-export with --no-push."
+            "Step 5 - Review and confirm: full-name scan found matches. Review them with the user and redact if needed, then repeat Step 4 with --no-push."
         )
     if pii_findings:
         next_steps.append(
-            "PII findings detected - review each one with the user. "
-            'If real: dataclaw config --redact "string" then re-export with --no-push. '
+            "Step 5 - Review and confirm: PII findings detected - review each one with the user. "
+            'If real: dataclaw config --redact "string" then repeat Step 4 with --no-push. '
             "False positives can be ignored."
         )
     if "high_entropy_strings" in pii_findings:
         next_steps.append(
-            "High-entropy strings detected - these may be leaked secrets (API keys, tokens, "
+            "Step 5 - Review and confirm: high-entropy strings detected - these may be leaked secrets (API keys, tokens, "
             "passwords) that escaped automatic redaction. Review each one using the provided "
             "context snippets. If any are real secrets, redact with: "
-            'dataclaw config --redact "the_secret" then re-export with --no-push.'
+            'dataclaw config --redact "the_secret" then repeat Step 4 with --no-push.'
         )
     next_steps.extend(
         [
-            'If any project should be excluded, run: dataclaw config --exclude "project_name" and re-export with --no-push.',
-            f"This will publish {total} sessions ({_format_size(file_size)}) publicly to Hugging Face"
+            'Step 5 - Review and confirm: if any project should be excluded, run dataclaw config --exclude "project_name" and repeat Step 4 with --no-push.',
+            f"Step 6 - Publish: this will publish {total} sessions ({_format_size(file_size)}) publicly to Hugging Face"
             + (f" at {repo_id}" if repo_id else "")
             + ". Ask the user: 'Are you ready to proceed?'",
-            'Once confirmed, push: dataclaw export --publish-attestation "User explicitly approved publishing to Hugging Face."',
+            'Once confirmed, push with dataclaw export --publish-attestation "User explicitly approved publishing to Hugging Face."',
         ]
     )
 
@@ -492,11 +494,11 @@ Quick checks (run these and review any matches):
   grep -oE '(ghp_|sk-|hf_)[A-Za-z0-9_-]{{10,}}' {abs_output} | head -5
   grep -oE '[0-9]{{1,3}}\\.[0-9]{{1,3}}\\.[0-9]{{1,3}}\\.[0-9]{{1,3}}' {abs_output} | sort -u
 
-NEXT: Ask for full name to run an exact-name privacy check, then scan for it:
+Step 5 next: ask for full name to run an exact-name privacy check, then scan for it:
   grep -i 'THEIR_NAME' {abs_output} | head -10
   If user declines sharing full name: use dataclaw confirm --skip-full-name-scan with a skip attestation.
 
-To add custom redactions, then re-export:
+If Step 5 finds anything sensitive, set redactions and repeat Step 4:
   dataclaw config --redact-usernames 'github_handle,discord_name'
   dataclaw config --redact 'secret-domain.com,my-api-key'
   dataclaw export --no-push -o {abs_output}

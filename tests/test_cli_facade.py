@@ -109,9 +109,9 @@ class TestWorkflowGateMessages:
             main()
         payload = extract_json_payload(capsys.readouterr().out)
         assert payload["error"] == "No export file found."
-        assert payload["blocked_on_step"] == "Step 1/3"
-        assert len(payload["process_steps"]) == 3
-        assert "export --no-push" in payload["process_steps"][0]
+        assert payload["blocked_on_step"] == "Step 4/6"
+        assert len(payload["process_steps"]) == 9
+        assert any("Step 4 - Export locally" in step for step in payload["process_steps"])
 
     def test_confirm_missing_full_name_explains_purpose_and_skip(self, tmp_path, monkeypatch, capsys):
         export_file = tmp_path / "export.jsonl"
@@ -136,8 +136,8 @@ class TestWorkflowGateMessages:
         payload = extract_json_payload(capsys.readouterr().out)
         assert payload["error"] == "Missing required --full-name for verification scan."
         assert "--skip-full-name-scan" in payload["hint"]
-        assert payload["blocked_on_step"] == "Step 2/3"
-        assert len(payload["process_steps"]) == 3
+        assert payload["blocked_on_step"] == "Step 5/6"
+        assert len(payload["process_steps"]) == 9
 
     def test_confirm_skip_full_name_scan_succeeds(self, tmp_path, monkeypatch, capsys):
         export_file = tmp_path / "export.jsonl"
@@ -172,9 +172,9 @@ class TestWorkflowGateMessages:
             main()
         payload = extract_json_payload(capsys.readouterr().out)
         assert payload["error"] == "You must run `dataclaw confirm` before pushing."
-        assert payload["blocked_on_step"] == "Step 2/3"
-        assert len(payload["process_steps"]) == 3
-        assert "confirm" in payload["process_steps"][1]
+        assert payload["blocked_on_step"] == "Step 5/6"
+        assert len(payload["process_steps"]) == 9
+        assert any("Step 5 - Review and confirm" in step for step in payload["process_steps"])
 
     def test_push_reuses_confirmed_file(self, tmp_path, monkeypatch, capsys):
         export_file = tmp_path / "confirmed.jsonl"
@@ -252,9 +252,10 @@ class TestWorkflowGateMessages:
             main()
         payload = extract_json_payload(capsys.readouterr().out)
         assert payload["error"] == "Project selection is not confirmed yet."
-        assert payload["blocked_on_step"] == "Step 3/6"
-        assert len(payload["process_steps"]) == 6
-        assert "prep && dataclaw list" in payload["process_steps"][0]
+        assert payload["blocked_on_step"] == "Step 3B/6"
+        assert len(payload["process_steps"]) == 9
+        assert any("Step 3 - Prep" in step for step in payload["process_steps"])
+        assert any("Step 3B - Choose project scope" in step for step in payload["process_steps"])
         assert payload["required_action"].startswith("Send the full project/folder list")
         assert "in a message" in payload["required_action"]
         assert isinstance(payload["projects"], list)
@@ -268,8 +269,8 @@ class TestWorkflowGateMessages:
             main()
         payload = extract_json_payload(capsys.readouterr().out)
         assert payload["error"] == "Source scope is not confirmed yet."
-        assert payload["blocked_on_step"] == "Step 2/6"
-        assert len(payload["process_steps"]) == 6
+        assert payload["blocked_on_step"] == "Step 3A/6"
+        assert len(payload["process_steps"]) == 9
         assert payload["allowed_sources"] == [
             "all",
             "both",

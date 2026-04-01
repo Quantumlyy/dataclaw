@@ -34,9 +34,15 @@ CONFIRM_COMMAND_SKIP_FULL_NAME_EXAMPLE = (
 )
 
 EXPORT_REVIEW_PUBLISH_STEPS = [
-    "Step 1/3: Export locally only: dataclaw export --no-push --output dataclaw_export.jsonl",
-    "Step 2/3: Review/redact, then run confirm: dataclaw confirm ...",
-    'Step 3/3: After explicit user approval, publish: dataclaw export --publish-attestation "User explicitly approved publishing to Hugging Face."',
+    "Step 1 - Install: pip install dataclaw",
+    "Step 2 - Install skill (Claude Code only): dataclaw update-skill claude",
+    "Step 3 - Prep: dataclaw prep",
+    "Step 3A - Choose source scope: dataclaw config --source <source|all>",
+    'Step 3B - Choose project scope: dataclaw list --source all, then dataclaw config --exclude "p1,p2" or dataclaw config --confirm-projects',
+    'Step 3C - Set redacted strings: dataclaw config --redact "string1,string2" and dataclaw config --redact-usernames "user1,user2"',
+    "Step 4 - Export locally: dataclaw export --no-push --output dataclaw_export.jsonl",
+    "Step 5 - Review and confirm: dataclaw confirm ...",
+    'Step 6 - Publish after explicit approval: dataclaw export --publish-attestation "User explicitly approved publishing to Hugging Face."',
 ]
 
 PROVIDER_SOURCES = tuple(PROVIDERS)
@@ -88,14 +94,7 @@ def _source_scope_literals() -> str:
 
 
 def _setup_to_publish_steps() -> list[str]:
-    return [
-        "Step 1/6: Run prep/list to review project scope: dataclaw prep && dataclaw list",
-        f"Step 2/6: Explicitly choose source scope: dataclaw config --source {_source_scope_placeholder()}",
-        "Step 3/6: Configure exclusions/redactions and confirm projects: dataclaw config ...",
-        "Step 4/6: Export locally only: dataclaw export --no-push --output dataclaw_export.jsonl",
-        "Step 5/6: Review and confirm: dataclaw confirm ...",
-        'Step 6/6: After explicit user approval, publish: dataclaw export --publish-attestation "User explicitly approved publishing to Hugging Face."',
-    ]
+    return list(EXPORT_REVIEW_PUBLISH_STEPS)
 
 
 def _provider_dataset_tags() -> str:
@@ -206,10 +205,10 @@ def _build_status_next_steps(
     if stage == "auth":
         return (
             [
-                "Ask the user for their Hugging Face token. Sign up: https://huggingface.co/join - Create WRITE token: https://huggingface.co/settings/tokens",
+                "Before Step 3 - Prep: ask the user for their Hugging Face token. Sign up: https://huggingface.co/join - Create WRITE token: https://huggingface.co/settings/tokens",
                 "Run: hf auth login --token <THEIR_TOKEN> (NEVER run bare hf auth login when automating this with an agent - it hangs)",
                 'Run: dataclaw config --redact "<THEIR_TOKEN>" (so the token gets redacted from exports)',
-                "Run: dataclaw prep (to confirm login and get next steps)",
+                "Step 3 - Prep: run dataclaw prep (to confirm login and get next steps)",
             ],
             None,
         )
@@ -222,30 +221,30 @@ def _build_status_next_steps(
         steps = []
         if not source_confirmed:
             steps.append(
-                f"Ask the user to explicitly choose export source scope: {_all_provider_labels()} or all. "
+                f"Step 3A - Choose source scope: ask the user to explicitly choose {_all_provider_labels()} or all. "
                 f"Then set it: dataclaw config --source {_source_scope_placeholder()}. "
                 "Do not run export until source scope is explicitly confirmed."
             )
         else:
             steps.append(
-                f"Source scope is currently set to '{configured_source}'. "
+                f"Step 3A - Choose source scope: source scope is currently set to '{configured_source}'. "
                 f"If the user wants a different scope, run: dataclaw config --source {_source_scope_placeholder()}."
             )
         if not projects_confirmed:
             steps.append(
-                f"Run: {list_command} - then send the FULL project/folder list to the user in your next message "
+                f"Step 3B - Choose project scope: run {list_command}, then send the FULL project/folder list to the user in your next message "
                 "(name, source, sessions, size, excluded), and ask which to EXCLUDE."
             )
             steps.append(
-                'Configure project scope: dataclaw config --exclude "project1,project2" '
+                'Step 3B - Choose project scope: run dataclaw config --exclude "project1,project2" '
                 "or dataclaw config --confirm-projects (to include all listed projects). "
                 "Do not run export until this folder review is confirmed."
             )
         steps.extend(
             [
-                "Ask about GitHub/Discord usernames to anonymize and sensitive strings to redact. "
-                'Configure: dataclaw config --redact-usernames "handle1" and dataclaw config --redact "string1"',
-                "When done configuring, export locally: dataclaw export --no-push --output dataclaw_export.jsonl",
+                "Step 3C - Set redacted strings: ask about GitHub/Discord usernames to anonymize and sensitive strings to redact. "
+                'Configure with dataclaw config --redact-usernames "handle1" and dataclaw config --redact "string1".',
+                "Step 4 - Export locally: dataclaw export --no-push --output dataclaw_export.jsonl",
             ]
         )
         return (steps, None)
@@ -253,11 +252,11 @@ def _build_status_next_steps(
     if stage == "review":
         return (
             [
-                "Ask the user for their full name to run an exact-name privacy check against the export. If they decline, you may skip this check with --skip-full-name-scan and include a clear attestation.",
+                "Step 5 - Review and confirm: ask the user for their full name to run an exact-name privacy check against the export. If they decline, you may skip this check with --skip-full-name-scan and include a clear attestation.",
                 "Run PII scan commands and review results with the user.",
-                "Ask the user: 'Are there any company names, internal project names, client names, private URLs, or other people's names in your conversations that you'd want redacted? Any custom domains or internal tools?' Add anything they mention with dataclaw config --redact.",
-                "Do a deep manual scan: sample ~20 sessions from the export (beginning, middle, end) and scan for names, private URLs, company names, credentials in conversation text, and anything else that looks sensitive. Report findings to the user.",
-                "If PII found in any of the above, add redactions (dataclaw config --redact) and re-export: dataclaw export --no-push",
+                "Ask the user whether there are any company names, internal project names, client names, private URLs, other people's names, custom domains, or internal tools that should be redacted. Add anything they mention with dataclaw config --redact.",
+                "Do a deep manual scan of about 20 sessions from the export (beginning, middle, end) and scan for names, private URLs, company names, credentials, and anything else that looks sensitive. Report findings to the user.",
+                "If PII is found in any of the above, update redactions (dataclaw config --redact) and repeat Step 4: dataclaw export --no-push",
                 "Run: " + CONFIRM_COMMAND_EXAMPLE + " - scans for PII, shows project breakdown, and unlocks pushing.",
                 'Do NOT push until the user explicitly confirms. Once confirmed, push: dataclaw export --publish-attestation "User explicitly approved publishing to Hugging Face."',
             ],
@@ -267,7 +266,7 @@ def _build_status_next_steps(
     if stage == "confirmed":
         return (
             [
-                "User has reviewed the export. Ask: 'Ready to publish to Hugging Face?' and push: dataclaw export --publish-attestation \"User explicitly approved publishing to Hugging Face.\"",
+                "Step 6 - Publish: the user has reviewed the export. Ask 'Ready to publish to Hugging Face?' and push with dataclaw export --publish-attestation \"User explicitly approved publishing to Hugging Face.\".",
             ],
             "dataclaw export",
         )
@@ -275,8 +274,7 @@ def _build_status_next_steps(
     dataset_url = f"https://huggingface.co/datasets/{repo_id}" if repo_id else None
     return (
         [
-            f"Done! Dataset is live{f' at {dataset_url}' if dataset_url else ''}. To update later: dataclaw export",
-            "To reconfigure: dataclaw prep then dataclaw config",
+            f"Done! Dataset is live{f' at {dataset_url}' if dataset_url else ''}. To update later, repeat Steps 3 through 6: dataclaw prep, reconfigure as needed, export locally, confirm, then publish.",
         ],
         None,
     )
