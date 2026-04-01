@@ -258,7 +258,7 @@ def update_skill(target: str) -> None:
             content = resp.read().decode()
     except (OSError, urllib.error.URLError) as e:
         print(f"Error downloading skill: {e}", file=sys.stderr)
-        bundled = Path(__file__).resolve().parent.parent.parent / "docs" / "SKILL.md"
+        bundled = Path(__file__).resolve().parent.parent.parent / ".claude" / "skills" / "dataclaw" / "SKILL.md"
         if bundled.exists():
             print(f"Using bundled copy from {bundled}")
             content = bundled.read_text()

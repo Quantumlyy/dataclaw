@@ -1,10 +1,10 @@
 ---
 name: dataclaw
 description: >
-  Export Claude Code conversation history to Hugging Face as structured training data.
+  Export Claude Code, Codex, and other coding-agent conversation history to Hugging Face.
   Use when the user asks about exporting conversations, uploading to Hugging Face,
   configuring DataClaw, reviewing PII/secrets in exports, or managing their dataset.
-allowed-tools: Bash(dataclaw *), Bash(huggingface-cli login *), Bash(pip install dataclaw*), Bash(grep *)
+allowed-tools: Bash(dataclaw *), Bash(hf auth login *), Bash(pip install dataclaw*), Bash(grep *)
 ---
 
 <!-- dataclaw-begin -->
@@ -45,25 +45,32 @@ After `dataclaw export --no-push`, follow the `next_steps` in the JSON output. T
 3. **Ask the user what else to look for** — company names, client names, private URLs, other people's names, custom domains
 4. **Deep manual scan** — sample ~20 sessions (beginning, middle, end) and look for anything sensitive the regex missed
 5. **Fix and re-export** if anything found: `dataclaw config --redact "string"` then `dataclaw export --no-push`
-6. **Run `dataclaw confirm`** — this runs its own PII scan, shows the project breakdown and session counts, and unlocks pushing. Walk through results with the user.
-7. **Push only after explicit user confirmation**: `dataclaw export`
+6. **Run `dataclaw confirm` with text attestations** — pass `--full-name`, `--attest-full-name`, `--attest-sensitive`, and `--attest-manual-scan`. It runs PII scan, verifies attestations, shows project breakdown, and unlocks pushing.
+7. **Push only after explicit user confirmation**: `dataclaw export --publish-attestation "User explicitly approved publishing to Hugging Face."`
 
 ## Commands Reference
 
 ```bash
 dataclaw status                            # Show current stage and next steps (JSON)
 dataclaw prep                              # Discover projects, check HF auth (JSON)
-dataclaw confirm                           # Scan PII, summarize export, unlock pushing (JSON)
-dataclaw confirm --file /path/to/file.jsonl # Confirm a specific export file
+dataclaw prep --source all                 # Prep with all sources explicitly selected
+dataclaw prep --source claude              # Prep using one supported source key (for example claude)
+dataclaw confirm --full-name "NAME" --attest-full-name "..." --attest-sensitive "..." --attest-manual-scan "..." # Scan PII, verify attestations, unlock pushing (JSON)
+dataclaw confirm --file /path/to/file.jsonl --full-name "NAME" --attest-full-name "..." --attest-sensitive "..." --attest-manual-scan "..." # Confirm a specific export file
 dataclaw list                              # List all projects with exclusion status
+dataclaw list --source all                 # List all sources
+dataclaw list --source claude              # List projects for one supported source key
 dataclaw config                            # Show current config
-dataclaw config --repo user/my-personal-claude-code-data  # Set HF repo
+dataclaw config --repo user/my-dataset     # Set HF repo
+dataclaw config --source all               # REQUIRED source scope selection (<source|all>; for example claude or codex)
 dataclaw config --exclude "a,b"            # Add excluded projects (appends)
 dataclaw config --redact "str1,str2"       # Add strings to redact (appends)
 dataclaw config --redact-usernames "u1,u2" # Add usernames to anonymize (appends)
 dataclaw config --confirm-projects         # Mark project selection as confirmed
-dataclaw export                            # Export and push (requires dataclaw confirm first)
+dataclaw export --publish-attestation "..." # Export and push (requires dataclaw confirm first)
 dataclaw export --no-push                  # Export locally only
+dataclaw export --source all --no-push     # Export all configured sources locally
+dataclaw export --source claude --no-push  # Export one supported source scope locally
 dataclaw export --all-projects             # Include everything (ignore exclusions)
 dataclaw export --no-thinking              # Exclude extended thinking blocks
 dataclaw export -o /path/to/file.jsonl     # Custom output path
@@ -72,8 +79,9 @@ dataclaw update-skill claude               # Install/update the dataclaw skill f
 
 ## Gotchas
 
-- **Never run bare `huggingface-cli login`** — it's interactive and will hang. Always use `--token`.
+- **Never run bare `hf auth login`** — it's interactive and will hang. Always use `--token`.
 - **`--exclude`, `--redact`, `--redact-usernames` APPEND** — they never overwrite. Safe to call repeatedly.
+- **Source selection is REQUIRED before export** — explicitly set `dataclaw config --source <source|all>` (for example `claude` or `codex`), or pass `--source ...` on export.
 - **`dataclaw prep` outputs pure JSON** — parse it directly.
 - **Always export with `--no-push` first** — review before publishing.
 - **`dataclaw export` (push) requires `dataclaw confirm` first** — it will refuse otherwise. Re-exporting with `--no-push` resets this.
