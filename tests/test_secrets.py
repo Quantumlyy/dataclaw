@@ -1,4 +1,4 @@
-"""Tests for dataclaw.secrets — secret detection and redaction."""
+"""Tests for dataclaw.secrets - secret detection and redaction."""
 
 import pytest
 
@@ -393,7 +393,7 @@ class TestScanText:
         assert any(f["type"] == "generic_secret" for f in findings)
 
     def test_generic_secret_15_char_rejected(self):
-        text = 'api_key = "aB3xZ9qR2mK7pL4"'  # 15 chars — too short
+        text = 'api_key = "aB3xZ9qR2mK7pL4"'  # 15 chars - too short
         findings = scan_text(text)
         assert not any(f["type"] == "generic_secret" for f in findings)
 

@@ -330,7 +330,7 @@ def run_export(
         save_config_fn(config)
 
     print("=" * 50)
-    print("  DataClaw — Coding Agent Log Exporter")
+    print("  DataClaw - Coding Agent Log Exporter")
     print("=" * 50)
 
     if not has_session_sources_fn(source_filter):
@@ -518,10 +518,10 @@ def main_impl(
     handle_config_fn,
     run_export_fn,
 ) -> None:
-    parser = argparse.ArgumentParser(description="DataClaw — Coding Agent Logs -> Hugging Face")
+    parser = argparse.ArgumentParser(description="DataClaw - Coding Agent Logs -> Hugging Face")
     sub = parser.add_subparsers(dest="command")
 
-    prep_parser = sub.add_parser("prep", help="Data prep — discover projects, detect HF, output JSON")
+    prep_parser = sub.add_parser("prep", help="Data prep - discover projects, detect HF, output JSON")
     prep_parser.add_argument("--source", choices=SOURCE_CHOICES, default="auto")
     sub.add_parser("status", help="Show current stage and next steps (JSON)")
     cf = sub.add_parser("confirm", help="Scan for PII, summarize export, and unlock pushing (JSON)")

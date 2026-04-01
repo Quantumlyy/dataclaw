@@ -206,8 +206,8 @@ def _build_status_next_steps(
     if stage == "auth":
         return (
             [
-                "Ask the user for their Hugging Face token. Sign up: https://huggingface.co/join — Create WRITE token: https://huggingface.co/settings/tokens",
-                "Run: hf auth login --token <THEIR_TOKEN> (NEVER run bare hf auth login when automating this with an agent — it hangs)",
+                "Ask the user for their Hugging Face token. Sign up: https://huggingface.co/join - Create WRITE token: https://huggingface.co/settings/tokens",
+                "Run: hf auth login --token <THEIR_TOKEN> (NEVER run bare hf auth login when automating this with an agent - it hangs)",
                 'Run: dataclaw config --redact "<THEIR_TOKEN>" (so the token gets redacted from exports)',
                 "Run: dataclaw prep (to confirm login and get next steps)",
             ],
@@ -233,7 +233,7 @@ def _build_status_next_steps(
             )
         if not projects_confirmed:
             steps.append(
-                f"Run: {list_command} — then send the FULL project/folder list to the user in your next message "
+                f"Run: {list_command} - then send the FULL project/folder list to the user in your next message "
                 "(name, source, sessions, size, excluded), and ask which to EXCLUDE."
             )
             steps.append(
@@ -258,7 +258,7 @@ def _build_status_next_steps(
                 "Ask the user: 'Are there any company names, internal project names, client names, private URLs, or other people's names in your conversations that you'd want redacted? Any custom domains or internal tools?' Add anything they mention with dataclaw config --redact.",
                 "Do a deep manual scan: sample ~20 sessions from the export (beginning, middle, end) and scan for names, private URLs, company names, credentials in conversation text, and anything else that looks sensitive. Report findings to the user.",
                 "If PII found in any of the above, add redactions (dataclaw config --redact) and re-export: dataclaw export --no-push",
-                "Run: " + CONFIRM_COMMAND_EXAMPLE + " — scans for PII, shows project breakdown, and unlocks pushing.",
+                "Run: " + CONFIRM_COMMAND_EXAMPLE + " - scans for PII, shows project breakdown, and unlocks pushing.",
                 'Do NOT push until the user explicitly confirms. Once confirmed, push: dataclaw export --publish-attestation "User explicitly approved publishing to Hugging Face."',
             ],
             "dataclaw confirm",

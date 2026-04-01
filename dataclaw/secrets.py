@@ -8,9 +8,9 @@ REDACTED = "[REDACTED]"
 
 # Ordered from most specific to least specific
 SECRET_PATTERNS = [
-    # JWT tokens — full 3-segment form
+    # JWT tokens - full 3-segment form
     ("jwt", re.compile(r"eyJ[A-Za-z0-9_-]{20,}\.[A-Za-z0-9_-]{20,}\.[A-Za-z0-9_-]{10,}")),
-    # JWT tokens — partial (header only or header+partial payload, e.g. truncated)
+    # JWT tokens - partial (header only or header+partial payload, e.g. truncated)
     ("jwt_partial", re.compile(r"eyJ[A-Za-z0-9_-]{15,}")),
     # PostgreSQL/database connection strings with passwords
     ("db_url", re.compile(r"postgres(?:ql)?://[^:]+:[^@\s]+@[^\s\"'`]+")),
@@ -39,7 +39,7 @@ SECRET_PATTERNS = [
     ("npm_token", re.compile(r"npm_[A-Za-z0-9]{30,}")),
     # AWS access key IDs (but not in regex pattern context)
     ("aws_key", re.compile(r"(?<![A-Za-z0-9\[])AKIA[0-9A-Z]{16}(?![0-9A-Z\]{}])")),
-    # AWS secret keys (40 chars, mixed case + special) — allow suffixed names like _GUTENBERG
+    # AWS secret keys (40 chars, mixed case + special) - allow suffixed names like _GUTENBERG
     (
         "aws_secret",
         re.compile(
@@ -118,9 +118,9 @@ SECRET_PATTERNS = [
             re.IGNORECASE,
         ),
     ),
-    # Email addresses (for PII removal) — require at least 2-char local part
+    # Email addresses (for PII removal) - require at least 2-char local part
     ("email", re.compile(r"\b[A-Za-z0-9._%+-]{2,}@[A-Za-z0-9.-]+\.[A-Za-z]{2,}\b")),
-    # Long base64-like strings in quotes (checked for entropy — see scan_text)
+    # Long base64-like strings in quotes (checked for entropy - see scan_text)
     ("high_entropy", re.compile(r"""['"][A-Za-z0-9_/+=.-]{40,}['"]""")),
 ]
 

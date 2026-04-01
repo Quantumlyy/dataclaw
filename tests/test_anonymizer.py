@@ -1,4 +1,4 @@
-"""Tests for dataclaw.anonymizer — PII anonymization."""
+"""Tests for dataclaw.anonymizer - PII anonymization."""
 
 from dataclaw.anonymizer import (
     Anonymizer,

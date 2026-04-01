@@ -1,6 +1,6 @@
 # DataClaw
 
-> **This is a performance art project.** Anthropic built their models on the world's freely shared information, then introduced increasingly [dystopian data policies](https://www.anthropic.com/news/detecting-and-preventing-distillation-attacks) to stop anyone else from doing the same with their data — pulling up the ladder behind them. DataClaw lets you throw the ladder back down. The dataset it produces is yours to share.
+> **This is a performance art project.** Anthropic built their models on the world's freely shared information, then introduced increasingly [dystopian data policies](https://www.anthropic.com/news/detecting-and-preventing-distillation-attacks) to stop anyone else from doing the same with their data - pulling up the ladder behind them. DataClaw lets you throw the ladder back down. The dataset it produces is yours to share.
 
 Turn your Claude Code, Codex, and other coding-agent conversation history into structured data and publish it to Hugging Face with a single command. DataClaw parses session logs, redacts secrets and PII, and uploads the result as a ready-to-use dataset.
 
@@ -16,45 +16,45 @@ Paste this into Claude Code, Codex, or any coding agent:
 Help me export my Claude Code, Codex, and other coding-agent conversation history to Hugging Face using DataClaw.
 Install it, set up the skill, then walk me through the process.
 
-STEP 1 — INSTALL
+STEP 1 - INSTALL
   pip install dataclaw
   If that fails: git clone https://github.com/banodoco/dataclaw.git /tmp/dataclaw && pip install /tmp/dataclaw
   If that also fails, ask the user where the source is.
 
-STEP 2 — INSTALL SKILL
+STEP 2 - INSTALL SKILL
   dataclaw update-skill claude
 
-STEP 3 — START
+STEP 3 - START
   dataclaw prep
-  Every dataclaw command outputs next_steps in its JSON — follow them through the entire flow.
+  Every dataclaw command outputs next_steps in its JSON - follow them through the entire flow.
 
-STEP 3A — CHOOSE SOURCE SCOPE (REQUIRED BEFORE EXPORT)
+STEP 3A - CHOOSE SOURCE SCOPE (REQUIRED BEFORE EXPORT)
   Ask the user explicitly which source scope to export: a supported source key such as claude or codex, or all.
   dataclaw config --source all
   Do not export until source scope is explicitly confirmed.
 
-STEP 3B — PRESENT ALL FOLDERS (REQUIRED BEFORE EXPORT)
+STEP 3B - PRESENT ALL FOLDERS (REQUIRED BEFORE EXPORT)
   dataclaw list --source all
   Send the FULL project/folder list to the user in a message (name, source, sessions, size, excluded).
   Ask which projects to exclude.
   dataclaw config --exclude "project1,project2" OR dataclaw config --confirm-projects
   Do not export until folder selection is explicitly confirmed.
 
-STEP 4 — REVIEW + CONFIRM (REQUIRED BEFORE PUSH)
+STEP 4 - REVIEW + CONFIRM (REQUIRED BEFORE PUSH)
   dataclaw export --no-push --output dataclaw_export.jsonl
   Review PII findings and apply excludes/redactions as needed.
   Full name is requested for an exact-name privacy scan against the export.
   If the user declines sharing full name, use --skip-full-name-scan and attest the skip reason.
   dataclaw confirm --full-name "THEIR FULL NAME" --attest-full-name "..." --attest-sensitive "..." --attest-manual-scan "..."
 
-STEP 5 — PUBLISH (ONLY AFTER EXPLICIT USER APPROVAL)
+STEP 5 - PUBLISH (ONLY AFTER EXPLICIT USER APPROVAL)
   dataclaw export --publish-attestation "User explicitly approved publishing to Hugging Face."
   Never publish unless the user explicitly says yes.
 
 IF ANY COMMAND FAILS DUE TO A SKIPPED STEP:
   Restate the 6-step checklist above and resume from the blocked step (do not skip ahead).
 
-IMPORTANT: Never run bare `hf auth login` when automating this with an agent — always use `--token`.
+IMPORTANT: Never run bare `hf auth login` when automating this with an agent - always use `--token`.
 IMPORTANT: Always export with --no-push first and review for PII before publishing.
 ```
 
@@ -142,16 +142,16 @@ dataclaw export --publish-attestation "User explicitly approved publishing to Hu
 
 DataClaw applies multiple layers of protection:
 
-1. **Path anonymization** — File paths stripped to project-relative
-2. **Username hashing** — Your macOS username + any configured usernames replaced with stable hashes
-3. **Secret detection** — Regex patterns catch JWT tokens, API keys (Anthropic, OpenAI, HF, GitHub, AWS, etc.), database passwords, private keys, Discord webhooks, and more
-4. **Entropy analysis** — Long high-entropy strings in quotes are flagged as potential secrets
-5. **Email redaction** — Personal email addresses removed
-6. **Custom redaction** — You can configure additional strings and usernames to redact
-7. **Tool call redaction** — Secrets in tool inputs and outputs are redacted
+1. **Path anonymization** - File paths stripped to project-relative
+2. **Username hashing** - Your macOS username + any configured usernames replaced with stable hashes
+3. **Secret detection** - Regex patterns catch JWT tokens, API keys (Anthropic, OpenAI, HF, GitHub, AWS, etc.), database passwords, private keys, Discord webhooks, and more
+4. **Entropy analysis** - Long high-entropy strings in quotes are flagged as potential secrets
+5. **Email redaction** - Personal email addresses removed
+6. **Custom redaction** - You can configure additional strings and usernames to redact
+7. **Tool call redaction** - Secrets in tool inputs and outputs are redacted
 
 **This is NOT foolproof.** Always review your exported data before publishing.
-Automated redaction cannot catch everything — especially service-specific
+Automated redaction cannot catch everything - especially service-specific
 identifiers, third-party PII, or secrets in unusual formats.
 
 We recommend to convert the exported jsonl into yaml using the script in https://github.com/peteromallet/dataclaw/issues/1 ,

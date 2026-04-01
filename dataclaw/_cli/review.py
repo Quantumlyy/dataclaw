@@ -422,13 +422,13 @@ def confirm(
         )
     if pii_findings:
         next_steps.append(
-            "PII findings detected — review each one with the user. "
+            "PII findings detected - review each one with the user. "
             'If real: dataclaw config --redact "string" then re-export with --no-push. '
             "False positives can be ignored."
         )
     if "high_entropy_strings" in pii_findings:
         next_steps.append(
-            "High-entropy strings detected — these may be leaked secrets (API keys, tokens, "
+            "High-entropy strings detected - these may be leaked secrets (API keys, tokens, "
             "passwords) that escaped automatic redaction. Review each one using the provided "
             "context snippets. If any are real secrets, redact with: "
             'dataclaw config --redact "the_secret" then re-export with --no-push.'

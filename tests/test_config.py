@@ -1,4 +1,4 @@
-"""Tests for dataclaw.config — config persistence."""
+"""Tests for dataclaw.config - config persistence."""
 
 from dataclaw import _json as json
 from dataclaw.config import load_config, save_config

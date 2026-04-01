@@ -1,4 +1,4 @@
-"""Persistent config for DataClaw — stored at ~/.dataclaw/config.json"""
+"""Persistent config for DataClaw - stored at ~/.dataclaw/config.json"""
 
 import sys
 from pathlib import Path
