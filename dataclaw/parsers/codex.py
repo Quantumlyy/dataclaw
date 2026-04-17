@@ -121,6 +121,35 @@ class CodexParseState:
     pending_user_timestamp: str | None = None
 
 
+def _coerce_output_to_string(raw: Any) -> str:
+    """Normalize a Codex tool output payload to a string.
+
+    Codex writes ``output`` fields in several shapes across versions:
+    - plain string (most common)
+    - list of content blocks (text / image / structured parts)
+    - dict with {"output": "...", "metadata": {...}} or similar
+    - None when the tool call failed before producing output
+    """
+    if isinstance(raw, str):
+        return raw
+    if isinstance(raw, list):
+        parts: list[str] = []
+        for item in raw:
+            if isinstance(item, str):
+                parts.append(item)
+            elif isinstance(item, dict):
+                parts.append(item.get("text") or item.get("content") or "")
+            else:
+                parts.append(str(item))
+        return "\n".join(p for p in parts if p)
+    if isinstance(raw, dict):
+        val = raw.get("output") or raw.get("text") or raw.get("content") or ""
+        return val if isinstance(val, str) else str(val)
+    if raw is None:
+        return ""
+    return str(raw)
+
+
 def build_tool_result_map(entries: list[dict[str, Any]], anonymizer: Anonymizer) -> dict[str, dict]:
     """Pre-pass: build call_id -> {output, status} from tool outputs."""
     result: dict[str, dict] = {}
@@ -134,7 +163,7 @@ def build_tool_result_map(entries: list[dict[str, Any]], anonymizer: Anonymizer)
             continue
 
         if payload_type == "function_call_output":
-            raw = payload.get("output", "")
+            raw = _coerce_output_to_string(payload.get("output", ""))
             out: dict[str, Any] = {}
             lines = raw.splitlines()
             output_lines: list[str] = []
@@ -156,7 +185,7 @@ def build_tool_result_map(entries: list[dict[str, Any]], anonymizer: Anonymizer)
             result[call_id] = {"output": out, "status": "success"}
 
         elif payload_type == "custom_tool_call_output":
-            raw = payload.get("output", "")
+            raw = _coerce_output_to_string(payload.get("output", ""))
             out: dict[str, Any] = {}
             try:
                 parsed = json.loads(raw)
